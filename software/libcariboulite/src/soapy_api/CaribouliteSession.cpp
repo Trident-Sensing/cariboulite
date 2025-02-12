@@ -44,7 +44,8 @@ SoapyCaribouliteSession::SoapyCaribouliteSession(void)
         CARIBOULITE_CONFIG_DEFAULT(temp);
         memcpy(&sys, &temp, sizeof(sys_st));
 
-		sys.force_fpga_reprogramming = false;
+        // NOTE: caleb changed the fpga to force reprogram on init
+		sys.force_fpga_reprogramming = true;
         cariboulite_set_log_level(cariboulite_log_level_info);
         int ret = cariboulite_init_driver(&sys, NULL);
         if (ret != 0)
