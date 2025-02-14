@@ -1,5 +1,6 @@
 #include "Cariboulite.hpp"
 #include <Iir.h>
+#include <SoapySDR/Device.hpp>
 #include <byteswap.h>
 #include <chrono>
 
@@ -17,18 +18,18 @@ void ReaderThread(SoapySDR::Stream* stream)
 {
 #if USE_ASYNC
     SoapySDR_logf(SOAPY_SDR_INFO, "Entering Reader Thread");
-    
+
     while (stream->readerThreadRunning())
     {
         if (!stream->stream_active)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
-        
-        int ret = cariboulite_radio_read_samples(stream->radio, 
-                                                    stream->interm_native_buffer1, 
-                                                    stream->interm_native_meta, 
+
+        int ret = cariboulite_radio_read_samples(stream->radio,
+                                                    stream->interm_native_buffer1,
+                                                    stream->interm_native_meta,
                                                     stream->mtu_size);
         if (ret < 0)
         {
@@ -40,10 +41,10 @@ void ReaderThread(SoapySDR::Stream* stream)
             // taken care of in the soapy front-end (ret = -2)
             ret = 0;
         }
-        
+
         if (ret) stream->rx_queue->put(stream->interm_native_buffer1, ret);
     }
-    
+
     SoapySDR_logf(SOAPY_SDR_INFO, "Leaving Reader Thread");
 #endif //USE_ASYNC
 }
@@ -59,17 +60,17 @@ SoapySDR::Stream::Stream(cariboulite_radio_state_st *radio)
     interm_native_meta = NULL;
     filter_i = NULL;
 	filter_q = NULL;
-    
+
     // stream init
     this->radio = radio;
     mtu_size = getMTUSizeElements();
-    
-    SoapySDR_logf(SOAPY_SDR_INFO, "Creating SampleQueue MTU: %d I/Q samples (%d bytes)", 
+
+    SoapySDR_logf(SOAPY_SDR_INFO, "Creating SampleQueue MTU: %d I/Q samples (%d bytes)",
 				mtu_size, mtu_size * sizeof(cariboulite_sample_complex_int16));
 
     #if USE_ASYNC
-        rx_queue = new circular_buffer<cariboulite_sample_complex_int16>(mtu_size * NUM_NATIVE_MTUS_PER_QUEUE, 
-                                                                         USE_ASYNC_OVERRIDE_WRITES, 
+        rx_queue = new circular_buffer<cariboulite_sample_complex_int16>(mtu_size * NUM_NATIVE_MTUS_PER_QUEUE,
+                                                                         USE_ASYNC_OVERRIDE_WRITES,
                                                                          USE_ASYNC_BLOCK_READS);
         interm_native_buffer1 = new cariboulite_sample_complex_int16[mtu_size];
     #endif //USE_ASYNC
@@ -80,7 +81,7 @@ SoapySDR::Stream::Stream(cariboulite_radio_state_st *radio)
     // a buffer for conversion between native and emulated formats
     interm_native_buffer2 = new cariboulite_sample_complex_int16[mtu_size];
     interm_native_meta = new cariboulite_sample_meta[mtu_size];
-    
+
 	filterType = DigitalFilter_None;
 	filt20_i.setup(4e6, 20e3/2);
 	filt50_i.setup(4e6, 50e3/2);
@@ -89,7 +90,7 @@ SoapySDR::Stream::Stream(cariboulite_radio_state_st *radio)
 	filt20_q.setup(4e6, 20e3/2);
 	filt50_q.setup(4e6, 50e3/2);
 	filt100_q.setup(4e6, 100e3/2);
-    
+
     #if USE_ASYNC
         reader_thread_running = 1;
         stream_active = 0;
@@ -103,7 +104,7 @@ SoapySDR::Stream::~Stream()
     filterType = DigitalFilter_None;
 	filter_i = NULL;
 	filter_q = NULL;
-    
+
     #if USE_ASYNC
         stream_active = 0;
         reader_thread_running = 0;
@@ -112,7 +113,7 @@ SoapySDR::Stream::~Stream()
         if (interm_native_buffer1) delete[] interm_native_buffer1;
         if (rx_queue) delete rx_queue;
     #endif //USE_ASYNC
-    
+
     if (interm_native_buffer2) delete[] interm_native_buffer2;
     if (interm_native_meta) delete[] interm_native_meta;
 }
@@ -132,7 +133,7 @@ void SoapySDR::Stream::setDigitalFilter(DigitalFilterType type)
 		case DigitalFilter_50KHz: filter_i = &filt50_i; filter_q = &filt50_q; break;
 		case DigitalFilter_100KHz: filter_i = &filt100_i; filter_q = &filt100_q; break;
 		case DigitalFilter_None:
-		default: 
+		default:
 			filter_i = NULL;
 			filter_q = NULL;
 			break;
@@ -279,15 +280,27 @@ int SoapySDR::Stream::Read(cariboulite_sample_complex_int16 *buffer, size_t num_
 }
 
 //=================================================================
+// Caleb changed this to check for failed reads and reset
 int SoapySDR::Stream::ReadSamples(cariboulite_sample_complex_int16* buffer, size_t num_elements, long timeout_us)
 {
+    // add count for number of times read has failed
+    // if greater than 50 then reset the device (performed in )
     int res = Read(buffer, num_elements, NULL, timeout_us);
     if (res < 0)
     {
-        //SoapySDR_logf(SOAPY_SDR_ERROR, "Reading %d elements failed from queue", num_elements); 
+        if (last_read_failed) {
+            // consecutive failed read, increment read_failure_count
+            consec_read_fails++;
+        }
+        else {
+            consec_read_fails = 0;
+        }
+        last_read_failed = true;
+        //SoapySDR_logf(SOAPY_SDR_ERROR, "Reading %d elements failed from queue", num_elements);
         return res;
     }
-    
+    last_read_failed = false;
+
 	if (filterType != DigitalFilter_None && filter_i != NULL && filter_q != NULL)
 	{
 		for (int i = 0; i < res; i++)
@@ -297,7 +310,7 @@ int SoapySDR::Stream::ReadSamples(cariboulite_sample_complex_int16* buffer, size
 		}
 	}
 
-    return res;  
+    return res;
 }
 
 //=================================================================

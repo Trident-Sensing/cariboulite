@@ -61,10 +61,10 @@ typedef struct
 #pragma pack()
 
 // The forward declared Stream Class
-class SoapySDR::Stream 
+class SoapySDR::Stream
 {
 public:
-	enum CaribouliteFormat 
+	enum CaribouliteFormat
 	{
 		CARIBOULITE_FORMAT_FLOAT32	= 0,
 		CARIBOULITE_FORMAT_INT16	= 1,
@@ -72,7 +72,7 @@ public:
 		CARIBOULITE_FORMAT_FLOAT64  = 3,
 	};
 	CaribouliteFormat format;
-	
+
 	enum DigitalFilterType
 	{
 		DigitalFilter_None = 0,
@@ -93,7 +93,7 @@ public:
 	int ReadSamples(sample_complex_double* buffer, size_t num_elements, long timeout_us);
 	int ReadSamples(sample_complex_int8* buffer, size_t num_elements, long timeout_us);
 	int ReadSamplesGen(void* buffer, size_t num_elements, long timeout_us);
-    
+
     int WriteSamples(cariboulite_sample_complex_int16* buffer, size_t num_elements, long timeout_us);
 	int WriteSamples(sample_complex_float* buffer, size_t num_elements, long timeout_us);
 	int WriteSamples(sample_complex_double* buffer, size_t num_elements, long timeout_us);
@@ -107,7 +107,7 @@ public:
 	int setFormat(const std::string &fmt);
 	inline int readerThreadRunning() {return reader_thread_running;};
     void activateStream(int active) {stream_active = active;};
-    
+
 public:
     cariboulite_radio_state_st *radio;
     cariboulite_channel_dir_en native_dir;
@@ -115,8 +115,11 @@ public:
     std::thread *reader_thread;
     int stream_active;
     int reader_thread_running;
+    bool last_read_failed;
+    // consecutive failure count for reads to know when to reset the device
+    int consec_read_fails;
 	circular_buffer<cariboulite_sample_complex_int16> *rx_queue;
-    
+
 	cariboulite_sample_complex_int16 *interm_native_buffer1;
     cariboulite_sample_complex_int16 *interm_native_buffer2;
     cariboulite_sample_meta* interm_native_meta;

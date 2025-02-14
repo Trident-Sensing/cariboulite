@@ -45,6 +45,7 @@ public:
          ******************************************************************/
         Cariboulite(const SoapySDR::Kwargs &args);
         virtual ~Cariboulite(void);
+        void resetDevice();
 
         /*******************************************************************
          * Identification API
@@ -65,9 +66,9 @@ public:
         std::vector<std::string> getStreamFormats(const int direction, const size_t channel) const;
         std::string getNativeStreamFormat(const int direction, const size_t channel, double &fullScale) const;
         SoapySDR::ArgInfoList getStreamArgsInfo(const int direction, const size_t channel) const;
-        SoapySDR::Stream *setupStream(  const int direction, 
-                                        const std::string &format, 
-                                        const std::vector<size_t> &channels = std::vector<size_t>(), 
+        SoapySDR::Stream *setupStream(  const int direction,
+                                        const std::string &format,
+                                        const std::vector<size_t> &channels = std::vector<size_t>(),
                                         const SoapySDR::Kwargs &args = SoapySDR::Kwargs());
         void closeStream(SoapySDR::Stream *stream);
         size_t getStreamMTU(SoapySDR::Stream *stream) const;
@@ -84,7 +85,7 @@ public:
                         long long &timeNs,
                         const long timeoutUs = 100000);
 
-        // writeStream signature is different from readStream!!                
+        // writeStream signature is different from readStream!!
         int writeStream(SoapySDR::Stream *stream,
                         const void * const *buffs, // const first!
                         const size_t numElems,

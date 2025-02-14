@@ -97,14 +97,14 @@ SoapySDR::ArgInfoList Cariboulite::getStreamArgsInfo(const int direction, const 
 * concurrently from multiple threads.
 * \endparblock
 */
-SoapySDR::Stream *Cariboulite::setupStream(const int direction, 
-                            const std::string &format, 
-                            const std::vector<size_t> &channels, 
+SoapySDR::Stream *Cariboulite::setupStream(const int direction,
+                            const std::string &format,
+                            const std::vector<size_t> &channels,
                             const SoapySDR::Kwargs &args)
 {
     // stream is already pre-allocated (both for TX and RX)
-    SoapySDR_logf(SOAPY_SDR_INFO, "setupStream: dir= %s, format= %s", 
-                                direction == SOAPY_SDR_TX ? "TX" : "RX", 
+    SoapySDR_logf(SOAPY_SDR_INFO, "setupStream: dir= %s, format= %s",
+                                direction == SOAPY_SDR_TX ? "TX" : "RX",
 								format.c_str());
 
 	// configure the stream
@@ -115,13 +115,13 @@ SoapySDR::Stream *Cariboulite::setupStream(const int direction,
 	}
 
     stream->setInnerStreamType(direction == SOAPY_SDR_TX ? cariboulite_channel_dir_tx : cariboulite_channel_dir_rx);
-    
+
     // Default: CW Output -> OFF
 	cariboulite_radio_set_cw_outputs(radio, false, false);
 
     // Check if args has CW Output -> ON/OFF
     for(auto it = args.cbegin(); it != args.cend(); ++it)
-    {   
+    {
         if(!it->first.compare("CW") && !it->second.compare("1")) // "CW=1"
         { // SET CW ON
             SoapySDR_logf(SOAPY_SDR_INFO, "CW Output: ON\n");
@@ -190,7 +190,7 @@ int Cariboulite::activateStream(SoapySDR::Stream *stream,
 {
     stream->activateStream(1);
     int ret = cariboulite_radio_activate_channel(radio, stream->getInnerStreamType(), true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
     return ret;
 }
 
@@ -229,7 +229,7 @@ int Cariboulite::deactivateStream(SoapySDR::Stream *stream, const int flags, con
      *
      * \param stream the opaque pointer to a stream handle
      * \param buffs an array of void* buffers num chans in size
-     * \param numElems the number of elements in each buffer 
+     * \param numElems the number of elements in each buffer
      *                  (number of samples - for us its 4 bytes per sample)
      * \param flags optional flag indicators about the result
      * \param timeNs the buffer's timestamp in nanoseconds
@@ -249,6 +249,20 @@ int Cariboulite::readStream(
     {
         return SOAPY_SDR_NOT_SUPPORTED;
     }
+    // check if there are many consecutive read fails
+    if (stream->consec_read_fails > 10) {
+        SoapySDR_logf(SOAPY_SDR_WARNING, "Detected multiple read failures, initiating device reset");
+        try {
+            // reset the device
+            resetDevice();
+            stream->consec_read_fails = 0;
+            stream->last_read_failed = false;
+        } catch (const std::exception& e) {
+            SoapySDR_logf(SOAPY_SDR_ERROR, "Device reset failed: %s", e.what());
+            return SOAPY_SDR_STREAM_ERROR;
+        }
+
+    }
 
     return stream->ReadSamplesGen((void*)buffs[0], numElems, timeoutUs);
 }
@@ -261,12 +275,12 @@ int Cariboulite::readStream(
      *
      * **Client code compatibility:**
      * Client code relies on writeStream() for proper back-pressure
-     * he writeStream() implementation must enforce the timeout such that the 
+     * he writeStream() implementation must enforce the timeout such that the
      * call blocks until space becomes available or timeout expiration.
      *
      * \param stream the opaque pointer to a stream handle
      * \param buffs an array of void* buffers num chans in size
-     * \param numElems the number of elements in each buffer 
+     * \param numElems the number of elements in each buffer
      *                  (number of samples - for us its 4 bytes per sample)
      * \param flags optional flag indicators about the result
      * \param timeNs the buffer's timestamp in nanoseconds

@@ -40,12 +40,12 @@ int cariboulite_radio_init(cariboulite_radio_state_st* radio, sys_st *sys, carib
     radio->lo_output = false;
     radio->tx_loopback_anabled = false;
     radio->smi_channel_id = GET_SMI_CH(type);
-    
+
     // activation of the channel
     cariboulite_radio_activate_channel(radio, cariboulite_channel_dir_rx, true);
     usleep(1000);
 	cariboulite_radio_activate_channel(radio, cariboulite_channel_dir_rx, false);
-    
+
     return 0;
 }
 
@@ -54,8 +54,8 @@ int cariboulite_radio_dispose(cariboulite_radio_state_st* radio)
 {
 	cariboulite_radio_activate_channel(radio, cariboulite_channel_dir_rx, false);
 
-    at86rf215_radio_set_state( &radio->sys->modem, 
-								GET_MODEM_CH(radio->type), 
+    at86rf215_radio_set_state( &radio->sys->modem,
+								GET_MODEM_CH(radio->type),
 								at86rf215_radio_state_cmd_trx_off);
     radio->state = cariboulite_radio_state_cmd_trx_off;
 
@@ -121,7 +121,7 @@ int cariboulite_radio_get_mod_intertupts (cariboulite_radio_state_st* radio, car
 	at86rf215_irq_st irq = {0};
     at86rf215_get_irqs(&radio->sys->modem, &irq, 0);
 
-	memcpy (&radio->interrupts, 
+	memcpy (&radio->interrupts,
 			(radio->type == cariboulite_channel_s1g) ? (&irq.radio09) : (&irq.radio24),
 			sizeof(cariboulite_radio_irq_st));
 
@@ -131,7 +131,7 @@ int cariboulite_radio_get_mod_intertupts (cariboulite_radio_state_st* radio, car
 }
 
 //=========================================================================
-int cariboulite_radio_set_rx_gain_control(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_rx_gain_control(cariboulite_radio_state_st* radio,
                                     bool rx_agc_on,
                                     int rx_gain_value_db)
 {
@@ -139,7 +139,7 @@ int cariboulite_radio_set_rx_gain_control(cariboulite_radio_state_st* radio,
     if (control_gain_val < 0) control_gain_val = 0;
     if (control_gain_val > 23) control_gain_val = 23;
 
-    at86rf215_radio_agc_ctrl_st rx_gain_control = 
+    at86rf215_radio_agc_ctrl_st rx_gain_control =
     {
         .agc_measure_source_not_filtered = 1,
         .avg = at86rf215_radio_agc_averaging_32,
@@ -172,7 +172,7 @@ int cariboulite_radio_get_rx_gain_control(cariboulite_radio_state_st* radio,
 }
 
 //=========================================================================
-int cariboulite_radio_get_rx_gain_limits(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_rx_gain_limits(cariboulite_radio_state_st* radio,
                                     int *rx_min_gain_value_db,
                                     int *rx_max_gain_value_db,
                                     int *rx_gain_value_resolution_db)
@@ -184,11 +184,11 @@ int cariboulite_radio_get_rx_gain_limits(cariboulite_radio_state_st* radio,
 }
 
 //=========================================================================
-int cariboulite_radio_set_rx_bandwidth(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_rx_bandwidth(cariboulite_radio_state_st* radio,
                                  		cariboulite_radio_rx_bw_en rx_bw)
 {
     cariboulite_radio_f_cut_en fcut = cariboulite_radio_rx_f_cut_half_fs;
-    
+
     /*if (rx_bw == cariboulite_radio_rx_bw_2000KHz)
     {
         fcut = cariboulite_radio_rx_f_cut_half_fs;      // 2MHz cuttof
@@ -204,15 +204,15 @@ int cariboulite_radio_set_rx_bandwidth(cariboulite_radio_state_st* radio,
     {
         fcut = cariboulite_radio_rx_f_cut_0_5_half_fs; // 1MHz cuttof
     }
-    else 
+    else
     {
         fcut = cariboulite_radio_rx_f_cut_0_25_half_fs; // 500kHz cuttof
     }*/
-   
-    
+
+
     radio->rx_fcut = fcut;
-    
-    at86rf215_radio_set_rx_bw_samp_st cfg = 
+
+    at86rf215_radio_set_rx_bw_samp_st cfg =
     {
         .inverter_sign_if = 0,
         .shift_if_freq = 1,                 // A value of one configures the receiver to shift the IF frequency
@@ -232,7 +232,7 @@ int cariboulite_radio_set_rx_bandwidth(cariboulite_radio_state_st* radio,
 int cariboulite_radio_set_rx_bandwidth_flt(cariboulite_radio_state_st* radio, float bw_hz)
 {
     cariboulite_radio_rx_bw_en bw = cariboulite_radio_rx_bw_160KHz;
-    
+
     if (bw_hz <= rx_bandwidth_middles[0]) bw = cariboulite_radio_rx_bw_160KHz;
     else if (bw_hz <= rx_bandwidth_middles[1]) bw = cariboulite_radio_rx_bw_200KHz;
     else if (bw_hz <= rx_bandwidth_middles[2]) bw = cariboulite_radio_rx_bw_250KHz;
@@ -250,7 +250,7 @@ int cariboulite_radio_set_rx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 }
 
 //=========================================================================
-int cariboulite_radio_get_rx_bandwidth(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_rx_bandwidth(cariboulite_radio_state_st* radio,
                                  cariboulite_radio_rx_bw_en *rx_bw)
 {
     at86rf215_radio_set_rx_bw_samp_st cfg = {0};
@@ -267,9 +267,9 @@ int cariboulite_radio_get_rx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 {
     cariboulite_radio_rx_bw_en bw;
     cariboulite_radio_get_rx_bandwidth(radio, &bw);
-    
+
     if (bw_hz == NULL) return 0;
-    
+
     switch(bw)
     {
         case cariboulite_radio_rx_bw_160KHz: *bw_hz = 160e3f; break;
@@ -290,11 +290,11 @@ int cariboulite_radio_get_rx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 }
 
 //=========================================================================
-int cariboulite_radio_set_rx_samp_cutoff(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_rx_samp_cutoff(cariboulite_radio_state_st* radio,
                                    cariboulite_radio_sample_rate_en rx_sample_rate,
                                    cariboulite_radio_f_cut_en rx_cutoff)
 {
-    at86rf215_radio_set_rx_bw_samp_st cfg = 
+    at86rf215_radio_set_rx_bw_samp_st cfg =
     {
         .inverter_sign_if = 0,              // A value of one configures the receiver to implement the inverted-sign
                                             // IF frequency. Use default setting for normal operation
@@ -308,7 +308,7 @@ int cariboulite_radio_set_rx_samp_cutoff(cariboulite_radio_state_st* radio,
     at86rf215_radio_set_rx_bandwidth_sampling(&radio->sys->modem, GET_MODEM_CH(radio->type), &cfg);
     radio->rx_fs = rx_sample_rate;
     radio->rx_fcut = rx_cutoff;
-    
+
     // setup the smi sample rate for timeout
     uint32_t sample_rate = 4000000;
     switch(rx_sample_rate)
@@ -323,7 +323,7 @@ int cariboulite_radio_set_rx_samp_cutoff(cariboulite_radio_state_st* radio,
         case cariboulite_radio_rx_sample_rate_400khz: sample_rate = 400000; break;
         default: sample_rate = 4000000; break;
     }
-    
+
     caribou_smi_set_sample_rate(&radio->sys->smi, sample_rate);
     return 0;
 }
@@ -371,7 +371,7 @@ int cariboulite_radio_set_rx_sample_rate_flt(cariboulite_radio_state_st* radio, 
 }
 
 //=========================================================================
-int cariboulite_radio_get_rx_samp_cutoff(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_rx_samp_cutoff(cariboulite_radio_state_st* radio,
                                    cariboulite_radio_sample_rate_en *rx_sample_rate,
                                    cariboulite_radio_f_cut_en *rx_cutoff)
 {
@@ -386,9 +386,9 @@ int cariboulite_radio_get_rx_sample_rate_flt(cariboulite_radio_state_st* radio, 
 {
     cariboulite_radio_sample_rate_en rx_sample_rate;
     cariboulite_radio_get_rx_samp_cutoff(radio, &rx_sample_rate, NULL);
-    
+
     if (sample_rate_hz == NULL) return 0;
-    
+
     *sample_rate_hz = sample_rate_to_flt(rx_sample_rate);
     return 0;
 }
@@ -399,7 +399,7 @@ int cariboulite_radio_set_tx_power(cariboulite_radio_state_st* radio, int tx_pow
 	float x = tx_power_dbm;
 	float tx_power_ctrl_model;
 	int tx_power_ctrl = 0;
-	
+
 	if (radio->type == cariboulite_channel_s1g)
 	{
 		if (tx_power_dbm < -14) tx_power_dbm = -14;
@@ -422,11 +422,11 @@ int cariboulite_radio_set_tx_power(cariboulite_radio_state_st* radio, int tx_pow
 		if (tx_power_ctrl < 0) tx_power_ctrl = 0;
 		if (tx_power_ctrl > 31) tx_power_ctrl = 31;
 	}
-    
+
     /*tx_power_ctrl = tx_power_dbm + 17;
     if (tx_power_ctrl < 0) tx_power_ctrl = 0;
 	if (tx_power_ctrl > 31) tx_power_ctrl = 31;*/
-	
+
     at86rf215_radio_tx_ctrl_st cfg =
     {
         .pa_ramping_time = at86rf215_radio_tx_pa_ramp_16usec,
@@ -441,7 +441,7 @@ int cariboulite_radio_set_tx_power(cariboulite_radio_state_st* radio, int tx_pow
 
     at86rf215_radio_setup_tx_ctrl(&radio->sys->modem, GET_MODEM_CH(radio->type), &cfg);
     radio->tx_power = tx_power_dbm;
-	
+
     return 0;
 }
 
@@ -450,10 +450,10 @@ int cariboulite_radio_get_tx_power(cariboulite_radio_state_st* radio, int *tx_po
 {
     at86rf215_radio_tx_ctrl_st cfg = {0};
     at86rf215_radio_get_tx_ctrl(&radio->sys->modem, GET_MODEM_CH(radio->type), &cfg);
-	
+
 	float x = cfg.tx_power;
 	float actual_model = 0;
-	
+
 	if (radio->type == cariboulite_channel_s1g)
 	{
 		actual_model = -0.000546f*x*x*x + 0.014352f*x*x + 0.902754f*x - 13.954753f;
@@ -462,11 +462,11 @@ int cariboulite_radio_get_tx_power(cariboulite_radio_state_st* radio, int *tx_po
 	{
 		actual_model = 0.000031f*x*x*x*x - 0.002344f*x*x*x + 0.040478f*x*x + 0.712209f*x - 11.168502;
 	}
-    
+
     /*actual_model = x - 17;
     if (actual_model < -17) actual_model = -17;
 	if (actual_model > 14) actual_model = 14;*/
-    
+
     radio->tx_power = (int)(actual_model);
     radio->tx_bw = (cariboulite_radio_tx_cut_off_en)cfg.analog_bw;
     radio->tx_fcut = (cariboulite_radio_f_cut_en)cfg.digital_bw;
@@ -477,10 +477,10 @@ int cariboulite_radio_get_tx_power(cariboulite_radio_state_st* radio, int *tx_po
 }
 
 //=========================================================================
-int cariboulite_radio_set_tx_bandwidth(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_tx_bandwidth(cariboulite_radio_state_st* radio,
                                  cariboulite_radio_tx_cut_off_en tx_bw)
 {
-    at86rf215_radio_tx_ctrl_st cfg = 
+    at86rf215_radio_tx_ctrl_st cfg =
     {
         .pa_ramping_time = at86rf215_radio_tx_pa_ramp_16usec,
         .current_reduction = at86rf215_radio_pa_current_reduction_0ma,  // we can use this to gain some more
@@ -502,7 +502,7 @@ int cariboulite_radio_set_tx_bandwidth(cariboulite_radio_state_st* radio,
 int cariboulite_radio_set_tx_bandwidth_flt(cariboulite_radio_state_st* radio, float tx_bw)
 {
     cariboulite_radio_tx_cut_off_en bw = cariboulite_radio_tx_cut_off_80khz;
-    
+
     if (tx_bw <= tx_bandwidth_middles[0]) bw = cariboulite_radio_tx_cut_off_80khz;
     else if (tx_bw <= tx_bandwidth_middles[1]) bw = cariboulite_radio_tx_cut_off_100khz;
     else if (tx_bw <= tx_bandwidth_middles[2]) bw = cariboulite_radio_tx_cut_off_125khz;
@@ -520,7 +520,7 @@ int cariboulite_radio_set_tx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 }
 
 //=========================================================================
-int cariboulite_radio_get_tx_bandwidth(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_tx_bandwidth(cariboulite_radio_state_st* radio,
                                  cariboulite_radio_tx_cut_off_en *tx_bw)
 {
     cariboulite_radio_get_tx_power(radio, NULL);
@@ -533,9 +533,9 @@ int cariboulite_radio_get_tx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 {
     cariboulite_radio_tx_cut_off_en bw;
     cariboulite_radio_get_tx_bandwidth(radio, &bw);
-    
+
     if (tx_bw == NULL) return 0;
-    
+
     switch(bw)
     {
         case cariboulite_radio_tx_cut_off_80khz: *tx_bw = 80e3f; break;
@@ -556,12 +556,12 @@ int cariboulite_radio_get_tx_bandwidth_flt(cariboulite_radio_state_st* radio, fl
 }
 
 //=========================================================================
-int cariboulite_radio_set_tx_samp_cutoff(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_tx_samp_cutoff(cariboulite_radio_state_st* radio,
                                    cariboulite_radio_sample_rate_en tx_sample_rate,
                                    cariboulite_radio_f_cut_en tx_cutoff)
 {
     uint8_t sample_gap = 0;
-    at86rf215_radio_tx_ctrl_st cfg = 
+    at86rf215_radio_tx_ctrl_st cfg =
     {
         .pa_ramping_time = at86rf215_radio_tx_pa_ramp_16usec,
         .current_reduction = at86rf215_radio_pa_current_reduction_0ma,  // we can use this to gain some more
@@ -576,8 +576,8 @@ int cariboulite_radio_set_tx_samp_cutoff(cariboulite_radio_state_st* radio,
     at86rf215_radio_setup_tx_ctrl(&radio->sys->modem, GET_MODEM_CH(radio->type), &cfg);
     radio->tx_fcut = (cariboulite_radio_f_cut_en)tx_cutoff;
     radio->tx_fs = tx_sample_rate;
-    
-    
+
+
     // setup the new sample rate in the FPGA
     switch (tx_sample_rate)
     {
@@ -591,7 +591,7 @@ int cariboulite_radio_set_tx_samp_cutoff(cariboulite_radio_state_st* radio,
         case cariboulite_radio_rx_sample_rate_400khz: sample_gap = 9; break;
         default: sample_gap = 0; break;
     }
-    
+
     caribou_fpga_set_sys_ctrl_tx_sample_gap (&radio->sys->fpga, sample_gap);
     return 0;
 }
@@ -605,7 +605,7 @@ int cariboulite_radio_set_tx_samp_cutoff_flt(cariboulite_radio_state_st* radio, 
 }
 
 //=========================================================================
-int cariboulite_radio_get_tx_samp_cutoff(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_tx_samp_cutoff(cariboulite_radio_state_st* radio,
                                    cariboulite_radio_sample_rate_en *tx_sample_rate,
                                    cariboulite_radio_f_cut_en *tx_cutoff)
 {
@@ -613,8 +613,8 @@ int cariboulite_radio_get_tx_samp_cutoff(cariboulite_radio_state_st* radio,
     cariboulite_radio_get_tx_power(radio, NULL);
     if (tx_sample_rate) *tx_sample_rate = radio->tx_fs;
     if (tx_cutoff) *tx_cutoff = radio->tx_fcut;
-    
-    // make sure that the sample rate matched the fpga gap   
+
+    // make sure that the sample rate matched the fpga gap
     switch (radio->tx_fs)
     {
         case at86rf215_radio_rx_sample_rate_4000khz: sample_gap = 0; break;
@@ -627,9 +627,9 @@ int cariboulite_radio_get_tx_samp_cutoff(cariboulite_radio_state_st* radio,
         case at86rf215_radio_rx_sample_rate_400khz: sample_gap = 9; break;
         default: sample_gap = 0; break;
     }
-    
+
     caribou_fpga_set_sys_ctrl_tx_sample_gap (&radio->sys->fpga, sample_gap);
-    
+
     return 0;
 }
 
@@ -638,9 +638,9 @@ int cariboulite_radio_get_tx_samp_cutoff_flt(cariboulite_radio_state_st* radio, 
 {
     cariboulite_radio_sample_rate_en tx_sample_rate;
     cariboulite_radio_get_tx_samp_cutoff(radio, &tx_sample_rate, NULL);
-    
+
     if (sample_rate_hz == NULL) return 0;
-    
+
     *sample_rate_hz = sample_rate_to_flt(tx_sample_rate);
     return 0;
 }
@@ -659,7 +659,7 @@ int cariboulite_radio_get_rssi(cariboulite_radio_state_st* radio, float *rssi_db
 
 	// if error maintain the older number and return error
     if (rssi_dbm) *rssi_dbm = radio->rx_rssi;
-    
+
 	return -1;
 }
 
@@ -668,7 +668,7 @@ int cariboulite_radio_get_energy_det(cariboulite_radio_state_st* radio, float *e
 {
     at86rf215_radio_energy_detection_st det = {0};
     at86rf215_radio_get_energy_detection(&radio->sys->modem, GET_MODEM_CH(radio->type), &det);
-    
+
     if (det.energy_detection_value >= -127.0 && det.energy_detection_value <= 4)   // register only valid values
     {
         radio->rx_energy_detection_value = det.energy_detection_value;
@@ -737,7 +737,7 @@ int cariboulite_radio_get_rand_val(cariboulite_radio_state_st* radio, uint8_t *r
 bool cariboulite_radio_wait_mixer_lock(cariboulite_radio_state_st* radio, int retries)
 {
 	rffc507x_device_status_st stat = {0};
-	
+
 	// applicable only in 6G / FULL version
 	if (radio->sys->board_info.numeric_product_id != system_type_cariboulite_full)
 	{
@@ -778,7 +778,7 @@ int cariboulite_radio_set_modem_state(cariboulite_radio_state_st* radio, caribou
         default:  ZF_LOGD("Setup Modem state to %d (unknown)", state); break;
     }
     at86rf215_radio_set_state( &radio->sys->modem,
-                                GET_MODEM_CH(radio->type), 
+                                GET_MODEM_CH(radio->type),
                                 (at86rf215_radio_state_cmd_en)state);
     radio->state = state;
     return 0;
@@ -835,7 +835,7 @@ cariboulite_ext_ref_freq_en cariboulite_radio_find_best_ref_freq(double f)
 #define FREQ_IN_ISM_24G_RANGE(f)  ((f)>=CARIBOULITE_2G4_MIN&&(f)<=CARIBOULITE_2G4_MAX)
 
 //=========================================================================
-int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
 									bool break_before_make,
 									double *freq)
 {
@@ -855,8 +855,8 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
         {
             if (break_before_make) cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_trx_off);
 
-            modem_act_freq = at86rf215_setup_channel (&radio->sys->modem, 
-                                                    at86rf215_rf_channel_900mhz, 
+            modem_act_freq = at86rf215_setup_channel (&radio->sys->modem,
+                                                    at86rf215_rf_channel_900mhz,
                                                     (uint32_t)f_rf);
 
             radio->if_frequency = 0;
@@ -864,7 +864,7 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
             radio->if_frequency = modem_act_freq;
             radio->actual_rf_frequency = radio->if_frequency;
             radio->requested_rf_frequency = f_rf;
-            radio->rf_frequency_error = radio->actual_rf_frequency - radio->requested_rf_frequency;   
+            radio->rf_frequency_error = radio->actual_rf_frequency - radio->requested_rf_frequency;
 
             // return actual frequency
             *freq = radio->actual_rf_frequency;
@@ -879,15 +879,15 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
 	//--------------------------------------------------------------------------------
     // ISM 2.4 GHZ CONFIGURATION
     //--------------------------------------------------------------------------------
-	else if (radio->type == cariboulite_channel_hif && 
+	else if (radio->type == cariboulite_channel_hif &&
 			 radio->sys->board_info.numeric_product_id == system_type_cariboulite_ism)
 	{
 		if (FREQ_IN_ISM_24G_RANGE(f_rf))
         {
             if (break_before_make) cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_trx_off);
-            
-            modem_act_freq = at86rf215_setup_channel (&radio->sys->modem, 
-                                                    at86rf215_rf_channel_2400mhz, 
+
+            modem_act_freq = at86rf215_setup_channel (&radio->sys->modem,
+                                                    at86rf215_rf_channel_2400mhz,
                                                     (uint32_t)f_rf);
 
             radio->if_frequency = 0;
@@ -895,7 +895,7 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
             radio->if_frequency = modem_act_freq;
             radio->actual_rf_frequency = radio->if_frequency;
             radio->requested_rf_frequency = f_rf;
-            radio->rf_frequency_error = radio->actual_rf_frequency - radio->requested_rf_frequency;   
+            radio->rf_frequency_error = radio->actual_rf_frequency - radio->requested_rf_frequency;
 
             // return actual frequency
             *freq = radio->actual_rf_frequency;
@@ -910,9 +910,9 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
     //--------------------------------------------------------------------------------
     // FULL 30-6GHz CONFIGURATION
     //--------------------------------------------------------------------------------
-    else if (radio->type == cariboulite_channel_hif && 
+    else if (radio->type == cariboulite_channel_hif &&
 			 radio->sys->board_info.numeric_product_id == system_type_cariboulite_full)
-    {		
+    {
         // Changing the frequency may sometimes need to break RX / TX
         if (break_before_make)
         {
@@ -924,39 +924,39 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
 
         // Decide the conversion direction and IF/RF/LO
         //-------------------------------------
-        if (f_rf >= CARIBOULITE_6G_MIN && 
+        if (f_rf >= CARIBOULITE_6G_MIN &&
             f_rf < (CARIBOULITE_2G4_MIN) )
         {
             // Setup the reference frequency as calculated before
             cariboulite_radio_ext_ref (radio->sys, ext_ref_choice);
             rffc507x_calibrate(&radio->sys->mixer);
-            
+
             // region #1 - UP CONVERSION
             uint32_t modem_freq = CARIBOULITE_2G4_MAX;
-            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem, 
-																at86rf215_rf_channel_2400mhz, 
+            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem,
+																at86rf215_rf_channel_2400mhz,
 																modem_freq);
-            
-            // setup mixer LO according to the actual modem frequency          
+
+            // setup mixer LO according to the actual modem frequency
 			//lo_act_freq = rffc507x_set_frequency(&radio->sys->mixer, modem_act_freq - f_rf);
 			//act_freq = modem_act_freq - lo_act_freq;
-            
+
             lo_act_freq = rffc507x_set_frequency(&radio->sys->mixer, modem_act_freq + f_rf);
             act_freq = lo_act_freq - modem_act_freq;
-            
+
             // setup fpga RFFE <= upconvert (tx / rx)
             conversion_direction = conversion_dir_up;
             caribou_smi_invert_iq(&radio->sys->smi, true);
         }
         //-------------------------------------
-        else if ( f_rf >= CARIBOULITE_2G4_MIN && 
+        else if ( f_rf >= CARIBOULITE_2G4_MIN &&
                 f_rf < CARIBOULITE_2G4_MAX )
         {
 			cariboulite_radio_ext_ref (radio->sys, cariboulite_ext_ref_off);
             // region #2 - bypass mode
             // setup modem frequency <= f_rf
-            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem, 
-                                                        at86rf215_rf_channel_2400mhz, 
+            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem,
+                                                        at86rf215_rf_channel_2400mhz,
                                                         (uint32_t)f_rf);
             lo_act_freq = 0;
             act_freq = modem_act_freq;
@@ -964,17 +964,17 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
             caribou_smi_invert_iq(&radio->sys->smi, true);
         }
         //-------------------------------------
-        else if ( f_rf >= (CARIBOULITE_2G4_MAX) && 
+        else if ( f_rf >= (CARIBOULITE_2G4_MAX) &&
                 f_rf < CARIBOULITE_6G_MAX )
         {
             // Setup the reference frequency as calculated before
             cariboulite_radio_ext_ref (radio->sys, ext_ref_choice);
             rffc507x_calibrate(&radio->sys->mixer);
-            
+
             // region #3 - DOWN-CONVERSION
             uint32_t modem_freq = CARIBOULITE_2G4_MIN;
-            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem, 
-                                                                at86rf215_rf_channel_2400mhz, 
+            modem_act_freq = (double)at86rf215_setup_channel (&radio->sys->modem,
+                                                                at86rf215_rf_channel_2400mhz,
                                                                 modem_freq);
 
             // setup mixer LO to according to actual modem frequency
@@ -998,8 +998,8 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
         // and the down/up conversion decision made before to setup the RF front-end
         switch (conversion_direction)
         {
-            case conversion_dir_up: 
-                if (radio->channel_direction == cariboulite_channel_dir_rx) 
+            case conversion_dir_up:
+                if (radio->channel_direction == cariboulite_channel_dir_rx)
                 {
                     caribou_fpga_set_io_ctrl_mode (&radio->sys->fpga, 0, caribou_fpga_io_ctrl_rfm_rx_lowpass);
                 }
@@ -1008,7 +1008,7 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
                     caribou_fpga_set_io_ctrl_mode (&radio->sys->fpga, 0, caribou_fpga_io_ctrl_rfm_tx_lowpass);
                 }
                 break;
-            case conversion_dir_none: 
+            case conversion_dir_none:
                 caribou_fpga_set_io_ctrl_mode (&radio->sys->fpga, 0, caribou_fpga_io_ctrl_rfm_bypass);
                 break;
             case conversion_dir_down:
@@ -1026,8 +1026,8 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
 
         // Make sure the LO and the IF PLLs are locked
         cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);
-        if (!cariboulite_radio_wait_for_lock(radio, &radio->modem_pll_locked, 
-                                            lo_act_freq > CARIBOULITE_MIN_LO ? &radio->lo_pll_locked : NULL, 
+        if (!cariboulite_radio_wait_for_lock(radio, &radio->modem_pll_locked,
+                                            lo_act_freq > CARIBOULITE_MIN_LO ? &radio->lo_pll_locked : NULL,
                                             100))
         {
             if (!radio->lo_pll_locked) ZF_LOGE("PLL MIXER failed to lock LO frequency (%.2f Hz), deactivating", lo_act_freq);
@@ -1045,15 +1045,15 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
         if (freq) *freq = act_freq;
     }
 
-    ZF_LOGD("Frequency setting CH: %d, Wanted: %.2f Hz, Set: %.2f Hz (MOD: %.2f, MIX: %.2f)", 
+    ZF_LOGD("Frequency setting CH: %d, Wanted: %.2f Hz, Set: %.2f Hz (MOD: %.2f, MIX: %.2f)",
                     radio->type, f_rf, act_freq, modem_act_freq, lo_act_freq);
-    
+
     // reactivate the channel if it was active before the frequency change request was issued
     return cariboulite_radio_activate_channel(radio, radio->channel_direction, radio->active);
 }
 
 //=========================================================================
-int cariboulite_radio_get_frequency(cariboulite_radio_state_st* radio, 
+int cariboulite_radio_get_frequency(cariboulite_radio_state_st* radio,
                                 	double *freq, double *lo, double* i_f)
 {
     if (freq) *freq = radio->actual_rf_frequency;
@@ -1066,30 +1066,30 @@ int cariboulite_radio_get_frequency(cariboulite_radio_state_st* radio,
 int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
                                         cariboulite_channel_dir_en dir,
                                         bool activate)
-{  
+{
     int ret = 0;
     radio->channel_direction = dir;
     radio->active = activate;
-    
+
 	int cal_i, cal_q;
     ZF_LOGD("Activating channel %d, dir = %s, activate = %d", radio->type, radio->channel_direction==cariboulite_channel_dir_rx?"RX":"TX", activate);
 
     // then deactivate the modem's stream
     cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_trx_off);
     ret = caribou_smi_set_driver_streaming_state(&radio->sys->smi, smi_stream_idle);
-   
+
     // DEACTIVATION
-    if (!activate) 
+    if (!activate)
     {
         return ret;
     }
-    
+
     // ACTIVATION STEPS
     if (radio->state != cariboulite_radio_state_cmd_tx_prep)
-    {   
+    {
         // deactivate the channel and prep it for pll lock
-        cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);        
-        
+        cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);
+
         at86rf215_radio_get_tx_iq_calibration(&radio->sys->modem, GET_MODEM_CH(radio->type), &cal_i, &cal_q);
 
         ZF_LOGD("Setup Modem state tx_prep");
@@ -1120,7 +1120,7 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
             .radio24_mode = at86rf215_iq_if_mode,
             .clock_skew = at86rf215_iq_clock_data_skew_4_906ns,
         };
-        
+
         // Setup the IQ stream properties
         smi_stream_state_en smi_state = smi_stream_idle;
         if (radio->smi_channel_id == caribou_smi_channel_900)
@@ -1137,16 +1137,16 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
             modem_iq_config.clock_skew = at86rf215_iq_clock_data_skew_4_906ns;
             smi_state = smi_stream_rx_channel_1;
         }
-        
+
         at86rf215_setup_iq_if(&radio->sys->modem, &modem_iq_config);
-        
+
         // configure FPGA with the correct rx channel
 		caribou_fpga_set_smi_channel (&radio->sys->fpga, radio->type == cariboulite_channel_s1g? caribou_fpga_smi_channel_0 : caribou_fpga_smi_channel_1);
         caribou_fpga_set_smi_ctrl_data_direction(&radio->sys->fpga, 1);
-        
+
         // turn on the modem RX
         cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_rx);
-        
+
         // turn on the SMI stream
         if (caribou_smi_set_driver_streaming_state(&radio->sys->smi, smi_state) != 0)
         {
@@ -1154,13 +1154,13 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
             return -1;
         }
     }
-    
+
 	//===========================================================
 	// ACTIVATE TX
 	//===========================================================
     else if (radio->channel_direction == cariboulite_channel_dir_tx)
     {
-        at86rf215_iq_interface_config_st modem_iq_config = 
+        at86rf215_iq_interface_config_st modem_iq_config =
         {
             .loopback_enable = radio->tx_loopback_anabled,
             .drv_strength = at86rf215_iq_drive_current_4ma,
@@ -1174,7 +1174,7 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
 
         // if its an LO frequency output from the mixer - no need for modem output
         // LO applicable only to the channel with the mixer
-        if (radio->lo_output && 
+        if (radio->lo_output &&
 			radio->type == cariboulite_channel_hif &&
 			radio->sys->board_info.numeric_product_id == system_type_cariboulite_full)
         {
@@ -1183,10 +1183,10 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
         }
         // otherwise we need the modem
         else if (radio->cw_output)
-        {        
+        {
             ZF_LOGD("Transmitting with cw_output");
-            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);    
-            
+            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);
+
 			if (radio->sys->board_info.numeric_product_id == system_type_cariboulite_full)
             {
 				// make sure the mixer doesn't bypass the lo
@@ -1196,31 +1196,31 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
             cariboulite_radio_set_tx_bandwidth(radio, cariboulite_radio_tx_cut_off_80khz);
 
             // CW output - constant I/Q values override
-            at86rf215_radio_set_tx_dac_input_iq(&radio->sys->modem, 
-                                                GET_MODEM_CH(radio->type), 
-                                                1, 0x7E, 
+            at86rf215_radio_set_tx_dac_input_iq(&radio->sys->modem,
+                                                GET_MODEM_CH(radio->type),
+                                                1, 0x7E,
                                                 1, 0x3F);
 
             // transition to state TX
-            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx); 
+            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx);
         }
 		else
         {
             ZF_LOGD("Transmitting with iq");
-            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep); 
-            
+            cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx_prep);
+
             cariboulite_radio_set_tx_bandwidth(radio, radio->tx_bw);
-            
+
             // CW output - disable
-            at86rf215_radio_set_tx_dac_input_iq(&radio->sys->modem, 
-                                                GET_MODEM_CH(radio->type), 
-                                                0, 0x7E, 
+            at86rf215_radio_set_tx_dac_input_iq(&radio->sys->modem,
+                                                GET_MODEM_CH(radio->type),
+                                                0, 0x7E,
                                                 0, 0x3F);
-            
+
             // apply the state
-            caribou_smi_set_driver_streaming_state(&radio->sys->smi, smi_stream_tx_channel);            
+            caribou_smi_set_driver_streaming_state(&radio->sys->smi, smi_stream_tx_channel);
             caribou_fpga_set_smi_ctrl_data_direction (&radio->sys->fpga, 0);
-            //cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx); 
+            //cariboulite_radio_set_modem_state(radio, cariboulite_radio_state_cmd_tx);
         }
     }
 
@@ -1261,38 +1261,48 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
                             size_t length)
 {
     int ret = 0;
-      
-    // CaribouSMI read   
-    ret = caribou_smi_read( &radio->sys->smi, 
-                            radio->smi_channel_id, 
-                            (caribou_smi_sample_complex_int16*)buffer, 
-                            (caribou_smi_sample_meta*)metadata, 
+
+    // CaribouSMI read
+    ret = caribou_smi_read( &radio->sys->smi,
+                            radio->smi_channel_id,
+                            (caribou_smi_sample_complex_int16*)buffer,
+                            (caribou_smi_sample_meta*)metadata,
                             length);
     if (ret < 0)
     {
         // -2 reserved for debug mode
-        if (ret == -1) {ZF_LOGE("SMI reading operation failed");}
+        if (ret == -1) {
+            ZF_LOGE("SMI reading operation failed");
+            ZF_LOGE("TESTING LOG SUCCESS");
+            ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
+        }
         else if (ret == -2) {}
-        else if (ret == -3) {ZF_LOGE("SMI data synchronization failed");}
-        
+        else if (ret == -3) {
+            ZF_LOGE("SMI data synchronization failed");
+            ZF_LOGE("TESTING LOG SUCCESS");
+            ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
+        }
+
     }
     else if (ret == 0)
     {
         ZF_LOGD("SMI reading operation returned timeout");
+        ZF_LOGE("TESTING LOG SUCCESS");
+        ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
     }
-    
+
     return ret;
 }
 
 //=========================================================================
 int cariboulite_radio_write_samples(cariboulite_radio_state_st* radio,
                             cariboulite_sample_complex_int16* buffer,
-                            size_t length)                            
-{   
+                            size_t length)
+{
     // Caribou SMI write
-    int ret = caribou_smi_write(&radio->sys->smi, 
-                                radio->smi_channel_id, 
-                                (caribou_smi_sample_complex_int16*)buffer, 
+    int ret = caribou_smi_write(&radio->sys->smi,
+                                radio->smi_channel_id,
+                                (caribou_smi_sample_complex_int16*)buffer,
                                 length);
     if (ret < 0)
     {
@@ -1302,7 +1312,7 @@ int cariboulite_radio_write_samples(cariboulite_radio_state_st* radio,
     {
         ZF_LOGD("SMI writing operation returned timeout");
     }
-    
+
     return ret;
 }
 
