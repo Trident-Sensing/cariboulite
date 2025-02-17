@@ -1274,19 +1274,17 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
         if (ret == -1) {
             // todo add prints for other state that is useful to understand condition
             ZF_LOGE("SMI reading operation failed");
-            ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
         }
         else if (ret == -2) {}
         else if (ret == -3) {
             ZF_LOGE("SMI data synchronization failed");
-            ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
+            // ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
         }
 
     }
     else if (ret == 0)
     {
-        ZF_LOGD("SMI reading operation returned timeout");
-        ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
+        ZF_LOGE("SMI reading operation returned timeout");
     }
 
     return ret;

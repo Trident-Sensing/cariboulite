@@ -284,9 +284,8 @@ int SoapySDR::Stream::Read(cariboulite_sample_complex_int16 *buffer, size_t num_
 int SoapySDR::Stream::ReadSamples(cariboulite_sample_complex_int16* buffer, size_t num_elements, long timeout_us)
 {
     // add count for number of times read has failed
-    // if greater than 50 then reset the device (performed in )
     int res = Read(buffer, num_elements, NULL, timeout_us);
-    if (res < 0)
+    if (res <= 0)
     {
         if (last_read_failed) {
             // consecutive failed read, increment read_failure_count
@@ -296,7 +295,7 @@ int SoapySDR::Stream::ReadSamples(cariboulite_sample_complex_int16* buffer, size
             consec_read_fails = 0;
         }
         last_read_failed = true;
-        //SoapySDR_logf(SOAPY_SDR_ERROR, "Reading %d elements failed from queue", num_elements);
+        SoapySDR_logf(SOAPY_SDR_ERROR, "Reading %d elements failed from queue, res: %i", num_elements, res);
         return res;
     }
     last_read_failed = false;
