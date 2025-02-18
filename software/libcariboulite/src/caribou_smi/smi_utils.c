@@ -58,30 +58,44 @@ void smi_utils_set_realtime_priority(int priority_deter)
 }
 
 //=========================================================================
+// Fuck you for not commenting this garbage.
 void smi_utils_dump_hex(const void* data, size_t size)
 {
+    // Construct a string that is 16 bytes long that represents each set of 8 bytes in hex formatting.
 	char ascii[17];
 	size_t i, j;
 	ascii[16] = '\0';
 
+    // For each byte in the data to print
 	for (i = 0; i < size; ++i)
     {
+        // Print the hex with 2 minimum digits to print (I think this means 0x0blah)
 		printf("%02X ", ((unsigned char*)data)[i]);
+
+        // If the character is in the ascii range, put it into the ascii string.
 		if (((unsigned char*)data)[i] >= ' ' && ((unsigned char*)data)[i] <= '~')
         {
 			ascii[i % 16] = ((unsigned char*)data)[i];
 		}
+
+        // Otherwise, encode a period??
         else
         {
 			ascii[i % 16] = '.';
 		}
+
+        // If we have filled an ascii string, print the string.
 		if ((i+1) % 8 == 0 || i+1 == size)
         {
-			printf(" ");
+            printf(" ");
+			
+            // String is exact length
 			if ((i+1) % 16 == 0)
             {
 				printf("|  %s \n", ascii);
 			}
+
+            // End it early
             else if (i+1 == size)
             {
 				ascii[(i+1) % 16] = '\0';
