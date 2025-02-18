@@ -1278,7 +1278,7 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
         else if (ret == -2) {}
         else if (ret == -3) {
             ZF_LOGE("SMI data synchronization failed");
-            ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
+            // ZF_LOGE_MEM(&radio->sys->smi, sizeof(radio->sys->smi), "SMI state dump (ret=%d):", ret);
         }
 
     }

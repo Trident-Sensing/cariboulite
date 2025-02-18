@@ -250,19 +250,18 @@ int Cariboulite::readStream(
         return SOAPY_SDR_NOT_SUPPORTED;
     }
     // check if there are many consecutive read fails
-    if (stream->consec_read_fails > 10) {
-        SoapySDR_logf(SOAPY_SDR_WARNING, "Detected multiple read failures, initiating device reset");
-        try {
-            // reset the device
-            resetDevice();
-            stream->consec_read_fails = 0;
-            stream->last_read_failed = false;
-        } catch (const std::exception& e) {
-            SoapySDR_logf(SOAPY_SDR_ERROR, "Device reset failed: %s", e.what());
-            return SOAPY_SDR_STREAM_ERROR;
-        }
-
-    }
+    // if (stream->consec_read_fails > 10) {
+    //     SoapySDR_logf(SOAPY_SDR_WARNING, "Detected multiple read failures, initiating device reset");
+    //     try {
+    //         // reset the device
+    //         resetDevice();
+    //         stream->consec_read_fails = 0;
+    //         stream->last_read_failed = false;
+    //     } catch (const std::exception& e) {
+    //         SoapySDR_logf(SOAPY_SDR_ERROR, "Device reset failed: %s", e.what());
+    //         return SOAPY_SDR_STREAM_ERROR;
+    //     }
+    // }
 
     return stream->ReadSamplesGen((void*)buffs[0], numElems, timeoutUs);
 }

@@ -77,7 +77,7 @@ static int caribou_smi_get_smi_settings(caribou_smi_st *dev, struct smi_settings
         ZF_LOGE("failed reading native batch length, setting the default - this error is not fatal but we have wrong kernel drivers");
         dev->native_batch_len = (1024)*(1024)/2;
     }
-    
+
     //printf("DEBUG: native batch len: %lu\n", dev->native_batch_len);
 
     if (print)
@@ -102,38 +102,38 @@ static int caribou_smi_setup_settings (caribou_smi_st* dev, struct smi_settings 
 
 	// 8 bit on each transmission (4 TRX per sample)
     settings->data_width = SMI_WIDTH_8BIT;
-	
+
 	// Enable DMA
     settings->dma_enable = 1;
-	
+
 	// Whether or not to pack multiple SMI transfers into a single 32 bit FIFO word
     settings->pack_data = 1;
-	
+
 	// External DREQs enabled
     settings->dma_passthrough_enable = 1;
-	
-    // RX DREQ Threshold Level. 
-    // A RX DREQ will be generated when the RX FIFO exceeds this threshold level. 
-    // This will instruct an external AXI RX DMA to read the RX FIFO. 
-    // If the DMA is set to perform burst reads, the threshold must ensure that there is 
+
+    // RX DREQ Threshold Level.
+    // A RX DREQ will be generated when the RX FIFO exceeds this threshold level.
+    // This will instruct an external AXI RX DMA to read the RX FIFO.
+    // If the DMA is set to perform burst reads, the threshold must ensure that there is
     // sufficient data in the FIFO to satisfy the burst
     // Instruction: Lower is faster response
     settings->dma_read_thresh = 1;
-    
-    // TX DREQ Threshold Level. 
-    // A TX DREQ will be generated when the TX FIFO drops below this threshold level. 
+
+    // TX DREQ Threshold Level.
+    // A TX DREQ will be generated when the TX FIFO drops below this threshold level.
     // This will instruct an external AXI TX DMA to write more data to the TX FIFO.
     // Instruction: Higher is faster response
     settings->dma_write_thresh = 254;
-    
+
     // RX Panic Threshold level.
-    // A RX Panic will be generated when the RX FIFO exceeds this threshold level. 
+    // A RX Panic will be generated when the RX FIFO exceeds this threshold level.
     // This will instruct the AXI RX DMA to increase the priority of its bus requests.
     // Instruction: Lower is more aggressive
     settings->dma_panic_read_thresh = 16;
-    
+
     // TX Panic threshold level.
-    // A TX Panic will be generated when the TX FIFO drops below this threshold level. 
+    // A TX Panic will be generated when the TX FIFO drops below this threshold level.
     // This will instruct the AXI TX DMA to increase the priority of its bus requests.
     // Instruction: Higher is more aggresive
     settings->dma_panic_write_thresh = 224;
@@ -148,7 +148,7 @@ static int caribou_smi_setup_settings (caribou_smi_st* dev, struct smi_settings 
         ZF_LOGE("failed writing ioctl to the smi fd (settings)");
         return -1;
     }
-    
+
     // set the address line parameters
     int address_dir_offset = 2;
     if (ioctl(dev->filedesc, SMI_STREAM_IOC_SET_ADDR_DIR_OFFSET, address_dir_offset) != 0)
@@ -156,7 +156,7 @@ static int caribou_smi_setup_settings (caribou_smi_st* dev, struct smi_settings 
         ZF_LOGE("failed writing ioctl to the smi fd (address_dir_offset)");
         return -1;
     }
-    
+
     // set the address line parameters
     int address_channel_offset = 3;
     if (ioctl(dev->filedesc, SMI_STREAM_IOC_SET_ADDR_CH_OFFSET, address_channel_offset) != 0)
@@ -164,7 +164,7 @@ static int caribou_smi_setup_settings (caribou_smi_st* dev, struct smi_settings 
         ZF_LOGE("failed writing ioctl to the smi fd (address_channel_offset)");
         return -1;
     }
-    
+
     return 0;
 }
 
@@ -251,7 +251,7 @@ static int caribou_smi_find_buffer_offset(caribou_smi_st* dev, uint8_t *buffer, 
             uint32_t s2 = *((uint32_t*)(&buffer[offs+4]));
             uint32_t s3 = *((uint32_t*)(&buffer[offs+8]));
             uint32_t s4 = *((uint32_t*)(&buffer[offs+12]));
-			
+
             //printf("%d => %08X\n", offs, s);
             if ((s1 & 0xC001C000) == 0x80004000 &&
                 (s2 & 0xC001C000) == 0x80004000 &&
@@ -352,7 +352,7 @@ static int caribou_smi_rx_data_analyze(caribou_smi_st* dev,
 	                cmplx_vec[i].q = s & 0x00001FFF; s >>= 13;
 	                s >>= 3;
 	                cmplx_vec[i].i = s & 0x00001FFF; s >>= 13;
-					
+
 					if (cmplx_vec[i].i >= (int16_t)0x1000) cmplx_vec[i].i -= (int16_t)0x2000;
                 	if (cmplx_vec[i].q >= (int16_t)0x1000) cmplx_vec[i].q -= (int16_t)0x2000;
                 }
@@ -366,12 +366,12 @@ static int caribou_smi_rx_data_analyze(caribou_smi_st* dev,
 
                 if (meta_offset) meta_offset[i].sync = s & 0x00000001;
                 if (cmplx_vec)
-                {   
+                {
 				 	s >>= 1;
 	                cmplx_vec[i].i = s & 0x00001FFF; s >>= 13;
 	                s >>= 3;
 	                cmplx_vec[i].q = s & 0x00001FFF; s >>= 13;
-					
+
 					if (cmplx_vec[i].i >= (int16_t)0x1000) cmplx_vec[i].i -= (int16_t)0x2000;
                 	if (cmplx_vec[i].q >= (int16_t)0x1000) cmplx_vec[i].q -= (int16_t)0x2000;
                 }
@@ -471,23 +471,23 @@ static int caribou_smi_timeout_read(caribou_smi_st* dev,
     // try reading the file
     int ret = read(dev->filedesc, buffer, len);
     if (ret <= 0)
-    {    
+    {
         int res = caribou_smi_poll(dev, timeout_num_millisec, smi_stream_dir_device_to_smi);
 
         if (res < 0)
         {
-            ZF_LOGD("poll error");
+            ZF_LOGE("poll error");
             return -1;
         }
         else if (res == 0)  // timeout
         {
-            //ZF_LOGD("===> smi read fd timeout");
+            ZF_LOGE("===> smi read fd timeout");
             return 0;
         }
 
         return read(dev->filedesc, buffer, len);
     }
-    
+
     return ret;
 }
 
@@ -497,14 +497,14 @@ void caribou_smi_setup_ios(caribou_smi_st* dev)
 	// setup the addresses
     io_utils_set_gpio_mode(2, io_utils_alt_1);  // addr
     io_utils_set_gpio_mode(3, io_utils_alt_1);  // addr
-	
+
 	// Setup the bus I/Os
 	// --------------------------------------------
 	for (int i = 6; i <= 15; i++)
 	{
 		io_utils_set_gpio_mode(i, io_utils_alt_1);  // 8xData + SWE + SOE
 	}
-	
+
 	io_utils_set_gpio_mode(24, io_utils_alt_1); // rwreq
 	io_utils_set_gpio_mode(25, io_utils_alt_1); // rwreq
 }
@@ -639,7 +639,7 @@ int caribou_smi_read(caribou_smi_st* dev, caribou_smi_channel_en channel,
     size_t left_to_read = length_samples * CARIBOU_SMI_BYTES_PER_SAMPLE;        // in bytes
     size_t read_so_far = 0;                                                     // in samples
     uint32_t to_millisec = caribou_smi_calc_read_timeout(dev->sample_rate, dev->native_batch_len);
-  
+
     while (left_to_read)
     {
         if (sample_offset) sample_offset = samples + read_so_far;
@@ -647,16 +647,17 @@ int caribou_smi_read(caribou_smi_st* dev, caribou_smi_channel_en channel,
 
         // current_read_len in bytes
         size_t current_read_len = ((left_to_read > dev->native_batch_len) ? dev->native_batch_len : left_to_read);
-        
+
         to_millisec = caribou_smi_calc_read_timeout(dev->sample_rate, current_read_len);
         int ret = caribou_smi_timeout_read(dev, dev->read_temp_buffer, current_read_len, to_millisec);
         if (ret < 0)
         {
+            ZF_LOGE("===> smi read error");
             return -1;
         }
         else if (ret == 0)
         {
-            ZF_LOGD("Reading timed-out");
+            // ZF_LOGD("Reading timed-out");
             break;
         }
         else
@@ -664,6 +665,8 @@ int caribou_smi_read(caribou_smi_st* dev, caribou_smi_channel_en channel,
             int data_affset = caribou_smi_rx_data_analyze(dev, channel, dev->read_temp_buffer, ret, sample_offset, meta_offset);
             if (data_affset < 0)
             {
+                ZF_LOGE("===> smi sync error, attempting to print buffer");
+                // smi_utils_dump_hex(dev->read_temp_buffer, ret);
                 return -3;
             }
 
@@ -687,30 +690,30 @@ int caribou_smi_read(caribou_smi_st* dev, caribou_smi_channel_en channel,
 //=========================================================================
 static void caribou_smi_generate_data(caribou_smi_st* dev, uint8_t* data, size_t data_length, caribou_smi_sample_complex_int16* sample_offset)
 {
-    caribou_smi_sample_complex_int16* cmplx_vec = sample_offset;  
+    caribou_smi_sample_complex_int16* cmplx_vec = sample_offset;
     uint32_t *samples = (uint32_t*)(data);
-    
+
     // Sample Structure
     // [                 BYTE 0      ] [           BYTE 1     ] [           BYTE 2        ] [          BYTE 3      ]
     // [SOF TXC CTX I12 I11 I10 I9 I8] [0 I7 I6 I5 I4 I3 I2 I1] [0 I0 Q12 Q11 Q10 Q9 Q8 Q7] [0 Q6 Q5 Q4 Q3 Q2 Q1 Q0]
 	//   1  0/1 0/1
-    
+
     for (unsigned int i = 0; i < (data_length / CARIBOU_SMI_BYTES_PER_SAMPLE); i++)
-    {                    
+    {
         int32_t ii = 0xFFFF; //cmplx_vec[i].i;
         int32_t qq = 0; //cmplx_vec[i].q;
         ii &= 0x1FFF;
         qq &= 0x1FFF;
-		
+
         uint32_t s = SMI_TX_SAMPLE_SOF | SMI_TX_SAMPLE_MODEM_TX_CTRL | SMI_TX_SAMPLE_COND_TX_CTRL; s <<= 5;
         s |= (ii >> 8) & 0x1F; s <<= 8;
         s |= (ii >> 1) & 0x7F; s <<= 2;
         s |= (ii & 0x1); s <<= 6;
         s |= (qq >> 7) & 0x3F; s <<= 8;
         s |= (qq & 0x7F);
-		
+
 		//if (i < 2) printf("0x%08X\n", s);
-		
+
         samples[i] = __builtin_bswap32(s);
         //samples[i] = s;
     }
@@ -739,7 +742,7 @@ int caribou_smi_write(caribou_smi_st* dev, caribou_smi_channel_en channel,
         // prepare the buffer
         caribou_smi_sample_complex_int16* sample_offset = samples + written_so_far;
         size_t current_write_len = (left_to_write > dev->native_batch_len) ? dev->native_batch_len : left_to_write;
-		
+
         // make sure the written bytes length is a whole sample multiplication
         // if the number of remaining bytes is smaller than sample size -> finish;
         current_write_len &= 0xFFFFFFFC;
