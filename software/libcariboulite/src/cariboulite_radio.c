@@ -910,6 +910,11 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
     //--------------------------------------------------------------------------------
     // FULL 30-6GHz CONFIGURATION
     //--------------------------------------------------------------------------------
+
+    // TODO: add a clearing of the buffer each retune
+    // TODO: investigate why radio channel is deactivated on error, but not otherwise. it's always re-activated if previously active upon success return
+    // which is weird because on activation call a deactivation step always happens in the activation function
+
     else if (radio->type == cariboulite_channel_hif &&
 			 radio->sys->board_info.numeric_product_id == system_type_cariboulite_full)
     {
@@ -961,6 +966,9 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
             lo_act_freq = 0;
             act_freq = modem_act_freq;
             conversion_direction = conversion_dir_none;
+
+            // TODO: this could be the source of the incorrect flip of IQ samples above 2.4G
+            // if so, the invert_iq call seems unecessary
             caribou_smi_invert_iq(&radio->sys->smi, true);
         }
         //-------------------------------------
@@ -983,6 +991,9 @@ int cariboulite_radio_set_frequency(cariboulite_radio_state_st* radio,
 
             // setup fpga RFFE <= downconvert (tx / rx)
             conversion_direction = conversion_dir_down;
+
+            // TODO: this could be the source of the incorrect flip of IQ samples above 2.4G
+            // if so, the invert_iq call seems unecessary
             caribou_smi_invert_iq(&radio->sys->smi, true);
         }
         //-------------------------------------
@@ -1085,6 +1096,11 @@ int cariboulite_radio_activate_channel(cariboulite_radio_state_st* radio,
     }
 
     // ACTIVATION STEPS
+    // TODO: investigate: doesn't this happen if radio->state is anything but 3?
+    // why would we always want to set the modem state as tx_prep?
+    // we know the channel direction, why would we want to do both activation steps?
+
+
     if (radio->state != cariboulite_radio_state_cmd_tx_prep)
     {
         // deactivate the channel and prep it for pll lock

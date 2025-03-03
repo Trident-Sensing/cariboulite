@@ -107,6 +107,8 @@ SoapySDR::Stream *Cariboulite::setupStream(const int direction,
                                 direction == SOAPY_SDR_TX ? "TX" : "RX",
 								format.c_str());
 
+    caribou_fpga_soft_reset(&sess.sys.fpga);
+
 	// configure the stream
 	if (stream->setFormat(format) != 0)
 	{
@@ -249,6 +251,7 @@ int Cariboulite::readStream(
     {
         return SOAPY_SDR_NOT_SUPPORTED;
     }
+
     // check if there are many consecutive read fails
     // if (stream->consec_read_fails > 10) {
     //     SoapySDR_logf(SOAPY_SDR_WARNING, "Detected multiple read failures, initiating device reset");

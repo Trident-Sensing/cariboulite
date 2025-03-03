@@ -261,6 +261,7 @@ int SoapySDR::Stream::WriteSamplesGen(void* buffer, size_t num_elements, long ti
 int SoapySDR::Stream::Read(cariboulite_sample_complex_int16 *buffer, size_t num_samples, uint8_t *meta, long timeout_us)
 {
     #if USE_ASYNC
+        SoapySDR_logf(SOAPY_SDR_INFO, "Entering async read, WHUUUTTT");
         return rx_queue->get(buffer, num_samples, timeout_us);
     #else                                                        // caribou_smi_sample_meta not defined...
         int ret = cariboulite_radio_read_samples(radio, buffer, (cariboulite_sample_meta*)meta, num_samples);
@@ -269,11 +270,11 @@ int SoapySDR::Stream::Read(cariboulite_sample_complex_int16 *buffer, size_t num_
             if (ret == -1)
             {
                 printf("reader thread failed to read SMI!\n");
-                ret = 0;
+                // ret = 0;
             }
             // a special case for debug streams which are not
             // taken care of in the soapy front-end (ret = -2)
-            ret = 0;
+            // ret = 0;
         }
         return ret;
     #endif //USE_ASYNC
@@ -284,9 +285,10 @@ int SoapySDR::Stream::Read(cariboulite_sample_complex_int16 *buffer, size_t num_
 int SoapySDR::Stream::ReadSamples(cariboulite_sample_complex_int16* buffer, size_t num_elements, long timeout_us)
 {
     // add count for number of times read has failed
-    int res = Read(buffer, num_elements, NULL, timeout_us);
+int res = Read(buffer, num_elements, NULL, timeout_us);
     if (res <= 0)
     {
+        // TODO: remove read failure counts for optimization here
         if (last_read_failed) {
             // consecutive failed read, increment read_failure_count
             consec_read_fails++;
@@ -390,5 +392,4 @@ int SoapySDR::Stream::ReadSamplesGen(void* buffer, size_t num_elements, long tim
 	    case CARIBOULITE_FORMAT_FLOAT64: return ReadSamples((sample_complex_double*)buffer, num_elements, timeout_us); break;
 		default: return ReadSamples((cariboulite_sample_complex_int16*)buffer, num_elements, timeout_us); break;
 	}
-	return 0;
 }

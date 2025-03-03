@@ -143,7 +143,7 @@ static const char *const ioctl_names[] =
 	"SET_STREAM_STATE"
 };
 
-
+// Wait up to t ticks, c cancels when reset, R is if still going?
 #define BUSY_WAIT_WHILE_TIMEOUT(C,T,R)          {int t = (T); while ((C) && t>0){t--;} (R)=t>0;}
 
 /***************************************************************************/
@@ -151,7 +151,9 @@ static void write_smi_reg(struct bcm2835_smi_instance *inst,
                           u32 val,
                           unsigned reg)
 {
-	writel(val, inst->smi_regs_ptr + reg);
+    // Write a 32 bit value to the register pointed to by reg.
+    writel(val, inst->smi_regs_ptr + reg);
+    // Insert a write-memory barrier to ensure the register is affected.
     mb();
 }
 

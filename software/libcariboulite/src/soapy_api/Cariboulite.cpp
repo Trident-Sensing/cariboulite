@@ -1,7 +1,9 @@
+#include <SoapySDR/Constants.h>
 #include <SoapySDR/Device.hpp>
+#include <cariboulite_radio.h>
 #include <cmath>
+#include <cstdio>
 #include "Cariboulite.hpp"
-#include "cariboulite_config_default.h"
 
 SoapyCaribouliteSession Cariboulite::sess;
 
@@ -57,17 +59,6 @@ void Cariboulite::resetDevice() {
         delete stream;
     }
 
-    // lock the session and release the old driver
-    std::lock_guard<std::mutex> lock(SoapyCaribouliteSession::sessionMutex);
-    cariboulite_release_driver(&sess.sys);
-
-    // reinitialize the driver
-    // force the fpga to be re-programmed in order to recover from smi sync error
-    sess.sys.force_fpga_reprogramming = true;
-
-    if (cariboulite_init_driver(&sess.sys, NULL) != 0) {
-        throw std::runtime_error("Failed to reinitialize driver during reset");
-    }
 
     // recreate the stream
     stream = new SoapySDR::Stream(radio);
@@ -80,8 +71,10 @@ void Cariboulite::resetDevice() {
 		format_str = SOAPY_SDR_CS16;
 	else if (format == SoapySDR::Stream::CARIBOULITE_FORMAT_INT8)
 		format_str = SOAPY_SDR_CS8;
-	else if (format == SoapySDR::Stream::CARIBOULITE_FORMAT_FLOAT32)
+	else if (format == SoapySDR::Stream::CARIBOULITE_FORMAT_FLOAT32) {
+	    printf("Setting format to Soapy cf32\n");
 		format_str = SOAPY_SDR_CF32;
+	}
 	else if (format == SoapySDR::Stream::CARIBOULITE_FORMAT_FLOAT64)
 		format_str = SOAPY_SDR_CF64;
 
@@ -92,7 +85,8 @@ void Cariboulite::resetDevice() {
            throw std::runtime_error( "setupStream invalid format " + format_str );
 	}
 
-    stream->setInnerStreamType(direction == SOAPY_SDR_TX ? cariboulite_channel_dir_tx : cariboulite_channel_dir_rx);
+	cariboulite_channel_dir_en dir = direction == SOAPY_SDR_TX ? cariboulite_channel_dir_tx : cariboulite_channel_dir_rx;
+    stream->setInnerStreamType(dir);
 }
 
 /*******************************************************************
