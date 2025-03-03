@@ -12,6 +12,15 @@ NC='\033[0m' # No Color
 ERROR="0"
 
 ## --------------------------------------------------------------------
+## update the git repo on develop_R1 branch to include sub-modules
+## --------------------------------------------------------------------
+# this is required to pull in the software/libcariboulite/src/iir submodule
+printf "\n[  1  ] ${GREEN}CaribouLite Git Repo${NC}\n"
+git pull
+git submodule init
+git submodule update
+
+## --------------------------------------------------------------------
 ## kernel module dev dependencies
 ## --------------------------------------------------------------------
 printf "\n[  2  ] ${GREEN}Updating system and installing dependencies...${NC}\n"
