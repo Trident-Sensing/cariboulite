@@ -26,8 +26,6 @@ git submodule update
 printf "\n[  2  ] ${GREEN}Updating system and installing dependencies...${NC}\n"
 # added Pkg lock and timeout for CI
 sudo apt-get -o DPkg::Lock::Timeout=60 update
-sudo apt-get -o DPkg::Lock::Timeout=60 -y install raspberrypi-kernel-headers # raspbian
-sudo apt-get -o DPkg::Lock::Timeout=60 -y install linux-headers-raspi # ubuntu
 sudo apt-get -o DPkg::Lock::Timeout=60 -y install module-assistant pkg-config libncurses5-dev cmake git libzmq3-dev
 sudo apt-get -o DPkg::Lock::Timeout=60 -y install swig avahi-daemon libavahi-client-dev python3-distutils libpython3-dev
 
@@ -65,21 +63,6 @@ cmake ../
 make
 sudo make install
 sudo ldconfig
-
-# TODO:  double check no fail: kernel module install
-printf "${CYAN}3. SMI kernel module & udev...${NC}\n"
-cd $ROOT_DIR/driver
-kernel_memory=$(grep "MemAvailable:" /proc/meminfo | awk '{print $2}')
-kernel_memory_mb=$((kernel_memory / 1024))
-printf "${CYAN}   Detected memory ${kernel_memory_mb} MB...${NC}\n"
-if (( kernel_memory_mb > 512 )); then
-  printf "${CYAN}   Installing with Fifo size multiplier of 6xMTU...${NC}\n"
-  ./install.sh install 6 2 3
-else
-  printf "${CYAN}   Installing with Fifo size multiplier of 2xMTU...${NC}\n"
-  ./install.sh install 2 2 3
-fi
-cd ..
 
 printf "${CYAN}4. Main software...${NC}\n"
 cd $ROOT_DIR
