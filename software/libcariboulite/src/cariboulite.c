@@ -248,7 +248,15 @@ int cariboulite_get_frequency_limits(cariboulite_channel_en ch, float *freq_low,
 int cariboulite_flush_pipeline()
 {
     // request the smi driver to flush its drivers fifo
-    return caribou_smi_flush_fifo(&sys.smi);
+    int res = caribou_smi_flush_fifo(&sys.smi);
+    // check if the buffer was actually flushed
+    caribou_fpga_smi_fifo_status_st status = {0};
+    caribou_fpga_get_smi_ctrl_fifo_status(&sys.fpga, &status);
+    // ZF_LOGE("FPGA SMI FIFO Status: empty: %d full: %d ", status.rx_fifo_empty);
+    if (status.rx_fifo_empty && res == 0) {
+	return 0;
+    }
+    return -1;
 }
 
 //=============================================================================

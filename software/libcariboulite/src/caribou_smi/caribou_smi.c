@@ -773,6 +773,8 @@ int caribou_smi_flush_fifo(caribou_smi_st* dev)
 {
     if (!dev) return -1;
     if (!dev->initialized) return -1;
+    // caleb thinks there is a possibility this isn't actually flushing
+    // it may depend on the custom dev module driver that caribou makes on install
     int ret = read(dev->filedesc, NULL, 0);
     if (ret != 0)
     {

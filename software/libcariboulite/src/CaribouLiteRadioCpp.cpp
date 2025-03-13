@@ -678,8 +678,7 @@ std::string CaribouLiteRadio::GetRadioName()
 }
 
 //==================================================================
-void CaribouLiteRadio::FlushBuffers()
+int CaribouLiteRadio::FlushBuffers()
 {
-    int res = cariboulite_flush_pipeline();
-    
+    return cariboulite_flush_pipeline();
 }

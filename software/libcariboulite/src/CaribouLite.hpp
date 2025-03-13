@@ -191,7 +191,7 @@ public:
     // General
     size_t GetNativeMtuSample(void);
     std::string GetRadioName(void);
-    void FlushBuffers(void);
+    int FlushBuffers(void);
     
 private:
     const cariboulite_radio_state_st* _radio;

@@ -16,6 +16,7 @@ extern "C" {
 
 #include <signal.h>
 #include "cariboulite_radio.h"
+#include "caribou_fpga/caribou_fpga.h"
 
 /**
  * @brief library version
