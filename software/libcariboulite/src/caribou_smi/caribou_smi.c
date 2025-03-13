@@ -775,11 +775,22 @@ int caribou_smi_flush_fifo(caribou_smi_st* dev)
     if (!dev->initialized) return -1;
     // caleb thinks there is a possibility this isn't actually flushing
     // it may depend on the custom dev module driver that caribou makes on install
-    int ret = read(dev->filedesc, NULL, 0);
-    if (ret != 0)
-    {
-        ZF_LOGE("failed flushing driver fifos");
-        return -1;
+    // previous read call `int ret = read(dev->filedesc, NULL, 0);`
+    bool read_success = false;
+    int res = read(dev->filedesc, NULL, 1024);
+    if (res >= 0 && res < 1024) {
+	read_success = true;
     }
-    return 0;
+    else if (res == 1024) {
+	// read full amount try to read till fail to clear buffer
+	while (res == 1024) {
+	    res = read(dev->filedesc, NULL, 1024);
+	}
+    }
+    if (read_success)
+    {
+	return 0;
+    }
+    ZF_LOGE("failed flushing driver fifos");
+    return -1;
 }

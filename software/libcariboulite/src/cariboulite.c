@@ -249,14 +249,13 @@ int cariboulite_flush_pipeline()
 {
     // request the smi driver to flush its drivers fifo
     int res = caribou_smi_flush_fifo(&sys.smi);
+    return res;
     // check if the buffer was actually flushed
-    caribou_fpga_smi_fifo_status_st status = {0};
-    caribou_fpga_get_smi_ctrl_fifo_status(&sys.fpga, &status);
-    // ZF_LOGE("FPGA SMI FIFO Status: empty: %d full: %d ", status.rx_fifo_empty);
-    if (status.rx_fifo_empty && res == 0) {
-	return 0;
-    }
-    return -1;
+    // caribou_fpga_smi_fifo_status_st status = {0};
+    // caribou_fpga_get_smi_ctrl_fifo_status(&sys.fpga, &status);
+    // ZF_LOGE("FPGA SMI FIFO Status: empty: %d", status.rx_fifo_empty);
+    // if (status.rx_fifo_empty && res == 0) { return 0; }
+    // return -1;
 }
 
 //=============================================================================
