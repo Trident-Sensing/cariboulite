@@ -1,3 +1,4 @@
+#include "zf_log/zf_log.h"
 #include <CaribouLite.hpp>
 #include <string.h>
 
@@ -110,6 +111,7 @@ int CaribouLiteRadio::ReadSamples(std::complex<short>* samples, size_t num_to_re
                                              num_to_read);
     if (ret <= 0)
     {
+        printf("failed to read samples: ret = %d\n", ret);
         return ret;
     }
     
@@ -176,6 +178,8 @@ CaribouLiteRadio::CaribouLiteRadio( const cariboulite_radio_state_st* radio,
             : _radio(radio), _device(parent), _type(type), _rxCallbackType(RxCbType::None), _api_type(api_type)
 {
     size_t mtu_size = GetNativeMtuSample();
+    // TODO: remove verbose logging once done debugging
+    // zf_log_set_output_level(ZF_LOG_VERBOSE);
     if (_api_type == Async)
     {
         //printf("Creating Radio Type %d ASYNC\n", type);

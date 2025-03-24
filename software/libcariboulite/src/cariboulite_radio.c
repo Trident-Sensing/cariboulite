@@ -1,3 +1,4 @@
+#include "caribou_fpga/caribou_fpga.h"
 #ifndef ZF_LOG_LEVEL
     #define ZF_LOG_LEVEL ZF_LOG_VERBOSE
 #endif
@@ -1271,14 +1272,27 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
     if (ret < 0)
     {
         // -2 reserved for debug mode
-        if (ret == -1) {ZF_LOGE("SMI reading operation failed");}
-        else if (ret == -2) {}
-        else if (ret == -3) {ZF_LOGE("SMI data synchronization failed");}
-        
+        if (ret == -1) {
+            ZF_LOGE("SMI reading operation failed");
+            ZF_LOGD("Read returned -1: Attempting to soft reset FPGA");
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+        }
+        else if (ret == -2) {
+            ZF_LOGD("Read returned -2: Attempting to soft reset FPGA");
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+        }
+        else if (ret == -3) {
+            // on smi data sync fail, try soft reseting the FPGA
+            ZF_LOGE("SMI data synchronization failed");
+            ZF_LOGD("Read returned -3: Attempting to soft reset FPGA");
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+        }
     }
     else if (ret == 0)
     {
         ZF_LOGD("SMI reading operation returned timeout");
+        ZF_LOGD("Attempting to soft reset FPGA");
+        caribou_fpga_soft_reset(&radio->sys->fpga);
     }
     
     return ret;

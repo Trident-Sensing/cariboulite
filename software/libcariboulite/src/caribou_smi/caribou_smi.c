@@ -481,7 +481,7 @@ static int caribou_smi_timeout_read(caribou_smi_st* dev,
         }
         else if (res == 0)  // timeout
         {
-            //ZF_LOGD("===> smi read fd timeout");
+            ZF_LOGD("===> smi read fd timeout");
             return 0;
         }
 
@@ -773,23 +773,24 @@ int caribou_smi_flush_fifo(caribou_smi_st* dev)
 {
     if (!dev) return -1;
     if (!dev->initialized) return -1;
-    // caleb thinks there is a possibility this isn't actually flushing
-    // it may depend on the custom dev module driver that caribou makes on install
     // previous read call `int ret = read(dev->filedesc, NULL, 0);`
     bool read_success = false;
-    int res = read(dev->filedesc, NULL, 1024);
-    if (res >= 0 && res < 1024) {
-	read_success = true;
+    // utilize timeout read, to try and avoid smi sync errors, make timeout tiny
+    // cause we don't actually care to wait to read data, we just want to make 
+    // sure there isn't any data there.
+    int res = read(dev->filedesc, NULL, 256);
+
+    if (res >= 0 && res < 256) {
+        read_success = true;
     }
-    else if (res == 1024) {
-	// read full amount try to read till fail to clear buffer
-	while (res == 1024) {
-	    res = read(dev->filedesc, NULL, 1024);
-	}
+    else if (res == 256) {
+	// read full amount try to read till less than 256 bytes are returned
+        while (res == 256) {
+            res = read(dev->filedesc, NULL, 256);
+        }
     }
-    if (read_success)
-    {
-	return 0;
+    if (read_success) {
+        return 0;
     }
     ZF_LOGE("failed flushing driver fifos");
     return -1;
