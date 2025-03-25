@@ -111,7 +111,7 @@ int CaribouLiteRadio::ReadSamples(std::complex<short>* samples, size_t num_to_re
                                              num_to_read);
     if (ret <= 0)
     {
-        printf("failed to read samples: ret = %d\n", ret);
+        // printf("failed to read samples: ret = %d\n", ret);
         return ret;
     }
     

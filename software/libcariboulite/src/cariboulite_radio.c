@@ -1269,30 +1269,45 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
                             (caribou_smi_sample_complex_int16*)buffer, 
                             (caribou_smi_sample_meta*)metadata, 
                             length);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         // -2 reserved for debug mode
         if (ret == -1) {
             ZF_LOGE("SMI reading operation failed");
-            ZF_LOGD("Read returned -1: Attempting to soft reset FPGA");
-            caribou_fpga_soft_reset(&radio->sys->fpga);
+            radio->read_fail_count++;
+            if (radio->read_fail_count > 3) {
+                ZF_LOGD("Read returned -1: Attempting to soft reset FPGA");
+                usleep(100);
+                caribou_fpga_soft_reset(&radio->sys->fpga);
+                usleep(100);
+            }
         }
         else if (ret == -2) {
             ZF_LOGD("Read returned -2: Attempting to soft reset FPGA");
+            radio->read_fail_count++;
+            usleep(100);
             caribou_fpga_soft_reset(&radio->sys->fpga);
+            usleep(100);
         }
         else if (ret == -3) {
             // on smi data sync fail, try soft reseting the FPGA
             ZF_LOGE("SMI data synchronization failed");
+            radio->read_fail_count++;
             ZF_LOGD("Read returned -3: Attempting to soft reset FPGA");
+            usleep(1000);
             caribou_fpga_soft_reset(&radio->sys->fpga);
+            usleep(1000);
         }
-    }
-    else if (ret == 0)
-    {
+    } else if (ret == 0) {
         ZF_LOGD("SMI reading operation returned timeout");
-        ZF_LOGD("Attempting to soft reset FPGA");
-        caribou_fpga_soft_reset(&radio->sys->fpga);
+        radio->read_fail_count++;
+        if (radio->read_fail_count > 5) {
+            ZF_LOGD("Attempting to soft reset FPGA");
+            usleep(100);
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+            usleep(100);
+        }
+    } else {
+        radio->read_fail_count = 0;
     }
     
     return ret;

@@ -194,6 +194,7 @@ typedef struct
     // OTHERS
     uint8_t                             random_value;
     float                               rx_thermal_noise_floor;
+    int                                 read_fail_count;
 } cariboulite_radio_state_st;
 
 /**
