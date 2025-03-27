@@ -775,12 +775,12 @@ int caribou_smi_flush_fifo(caribou_smi_st* dev)
     if (!dev->initialized) return -1;
     // we don't actually care to wait to read data, we just want to make 
     // sure there isn't any data there.
-    int res = 4096;
-    while (res == 4096) {
-	int res = read(dev->filedesc, NULL, 4096);
+    int res = read(dev->filedesc, NULL, 1024);
+    while (res == 1024) {
+        int res = read(dev->filedesc, NULL, 1024);
     }
     if (res >= 0) {
-	return 0;
+        return 0;
     }
     ZF_LOGE("failed flushing driver fifos");
     return -1;
