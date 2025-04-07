@@ -1264,50 +1264,50 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
     int ret = 0;
       
     // CaribouSMI read   
-    ret = caribou_smi_read( &radio->sys->smi, 
-                            radio->smi_channel_id, 
-                            (caribou_smi_sample_complex_int16*)buffer, 
-                            (caribou_smi_sample_meta*)metadata, 
-                            length);
+    ret = caribou_smi_read(&radio->sys->smi, 
+                    radio->smi_channel_id, 
+                    (caribou_smi_sample_complex_int16*)buffer, 
+                    (caribou_smi_sample_meta*)metadata, 
+                    length);
 
     switch (ret) {
 	case -1:
-            ZF_LOGE("SMI reading operation failed");
-            radio->read_fail_count++;
-            if (radio->read_fail_count > 3) {
-                ZF_LOGD("Read returned -1: Attempting to soft reset FPGA");
-                caribou_fpga_soft_reset(&radio->sys->fpga);
-                usleep(100000);
+        ZF_LOGE("SMI reading operation failed");
+        radio->read_fail_count++;
+        if (radio->read_fail_count > 3) {
+            ZF_LOGD("Read returned -1: Attempting to soft reset FPGA");
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+            sleep(1);
 	    }
 	    break;
 	case -2:
 	    // -2 reserved for debug mode
-            ZF_LOGD("Read returned -2: Attempting to soft reset FPGA");
-            radio->read_fail_count++;
-            caribou_fpga_soft_reset(&radio->sys->fpga);
-            usleep(100000);
+        ZF_LOGD("Read returned -2: Attempting to soft reset FPGA");
+        radio->read_fail_count++;
+        caribou_fpga_soft_reset(&radio->sys->fpga);
+        sleep(1);
 	    break;
 	case -3:
-            // on smi data sync fail, try soft reseting the FPGA
-            ZF_LOGE("SMI data synchronization failed");
-            radio->read_fail_count++;
-            ZF_LOGD("Read returned -3: Attempting to soft reset FPGA");
-            caribou_fpga_soft_reset(&radio->sys->fpga);
-            usleep(100000);
+        // on smi data sync fail, try soft reseting the FPGA
+        ZF_LOGE("SMI data synchronization failed");
+        radio->read_fail_count++;
+        ZF_LOGD("Read returned -3: Attempting to soft reset FPGA");
+        caribou_fpga_soft_reset(&radio->sys->fpga);
+        usleep(100000);
 	    break;
 	case 0:
-            ZF_LOGD("SMI reading operation returned timeout");
-            radio->read_fail_count++;
-            if (radio->read_fail_count > 5) {
-                ZF_LOGD("Attempting to soft reset FPGA");
-                caribou_fpga_soft_reset(&radio->sys->fpga);
-                usleep(100000);
+        ZF_LOGE("SMI reading operation returned timeout");
+        radio->read_fail_count++;
+        if (radio->read_fail_count > 5) {
+            ZF_LOGD("Attempting to soft reset FPGA");
+            caribou_fpga_soft_reset(&radio->sys->fpga);
+            sleep(1);
 	    }
 	    break;
 	default:
 	    if (ret > 0) radio->read_fail_count = 0;
 	    break;
-        }
+    }
     return ret;
 }
 

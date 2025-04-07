@@ -1,3 +1,4 @@
+#include <stddef.h>
 #ifndef ZF_LOG_LEVEL
     #define ZF_LOG_LEVEL ZF_LOG_VERBOSE
 #endif
@@ -771,17 +772,20 @@ size_t caribou_smi_get_native_batch_samples(caribou_smi_st* dev)
 //=========================================================================
 int caribou_smi_flush_fifo(caribou_smi_st* dev)
 {
-    if (!dev) return -1;
-    if (!dev->initialized) return -1;
-    // we don't actually care to wait to read data, we just want to make 
-    // sure there isn't any data there.
-    int res = read(dev->filedesc, NULL, 1024);
-    while (res == 1024) {
-        int res = read(dev->filedesc, NULL, 1024);
-    }
-    if (res >= 0) {
-        return 0;
-    }
+    if (!dev || !dev->initialized) return -1;
+
+    size_t flush_size = dev->native_batch_len / sizeof(caribou_smi_sample_complex_int16);
+    int num_read_times = 10;
+    caribou_smi_sample_complex_int16 temp[flush_size]; 
+
+    int res = 0;
+    for (int i = 0; i < num_read_times; i++)
+        res = caribou_smi_read(dev, caribou_smi_channel_2400, temp, NULL, flush_size);
+
+    ZF_LOGE("flush result: %d", res);
+
+    if (res > 0) return 0;
+
     ZF_LOGE("failed flushing driver fifos");
     return -1;
 }
