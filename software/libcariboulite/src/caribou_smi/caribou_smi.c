@@ -774,17 +774,20 @@ int caribou_smi_flush_fifo(caribou_smi_st* dev)
 {
     if (!dev || !dev->initialized) return -1;
 
-    size_t flush_size = dev->native_batch_len / sizeof(caribou_smi_sample_complex_int16);
     int num_read_times = 10;
+    size_t flush_size = dev->native_batch_len / sizeof(caribou_smi_sample_complex_int16);
     caribou_smi_sample_complex_int16 temp[flush_size]; 
 
     int res = 0;
-    for (int i = 0; i < num_read_times; i++)
+    for (int i = 0; i < num_read_times; i++) {
         res = caribou_smi_read(dev, caribou_smi_channel_2400, temp, NULL, flush_size);
+        if (res <= 0) break;
+	    usleep(10000);
+    }
 
     ZF_LOGE("flush result: %d", res);
 
-    if (res > 0) return 0;
+    if (res >= 0) return 0;
 
     ZF_LOGE("failed flushing driver fifos");
     return -1;
