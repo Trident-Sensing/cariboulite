@@ -111,11 +111,12 @@ int CaribouLiteRadio::ReadSamples(std::complex<short>* samples, size_t num_to_re
                                              _read_metadata, 
                                              num_to_read);
     // TODO: remove debug
-    ZF_LOGD("cariboulite_radio_read_samples ret =%d\n", ret);
+    printf("cariboulite_radio_read_samples ret =%d\n", ret);
 
     if (ret <= 0)
     {
-        // printf("failed to read samples: ret = %d\n", ret);
+        // TODO: remove debug
+        printf("failed to read samples: ret = %d\n", ret);
         return ret;
     }
     

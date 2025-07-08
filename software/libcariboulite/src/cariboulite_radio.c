@@ -1280,6 +1280,7 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
             caribou_fpga_soft_reset(&radio->sys->fpga);
             usleep(1000);
 	    }
+        usleep(100);
 	    break;
 	case -2:
 	    // -2 reserved for debug mode
@@ -1301,6 +1302,7 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
             caribou_fpga_soft_reset(&radio->sys->fpga);
             usleep(1000);
 	    }
+        usleep(100);
 	    break;
 	default:
 	    if (ret > 0) radio->read_fail_count = 0;
