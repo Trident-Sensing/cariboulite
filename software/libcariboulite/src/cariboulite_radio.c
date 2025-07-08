@@ -41,6 +41,7 @@ int cariboulite_radio_init(cariboulite_radio_state_st* radio, sys_st *sys, carib
     radio->lo_output = false;
     radio->tx_loopback_anabled = false;
     radio->smi_channel_id = GET_SMI_CH(type);
+    radio->read_fail_count = 0;
     
     // activation of the channel
     cariboulite_radio_activate_channel(radio, cariboulite_channel_dir_rx, true);
