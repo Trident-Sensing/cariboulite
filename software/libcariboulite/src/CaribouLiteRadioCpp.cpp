@@ -10,7 +10,8 @@ void CaribouLiteRadio::CaribouLiteRxThread(CaribouLiteRadio* radio)
     CaribouLiteMeta* rx_meta_buffer = new CaribouLiteMeta[mtu_size];
     std::complex<float>* rx_copmlex_data = new std::complex<float>[mtu_size];
     
-    //printf("Enterred Thread\n");
+    // TODO: remove debug
+    ZF_LOGD("entered receiving read thread");
     
     while (radio->_rx_thread_running)
     {
@@ -79,7 +80,7 @@ int CaribouLiteRadio::ReadSamples(std::complex<float>* samples, size_t num_to_re
     }        
 
     int ret = ReadSamples((std::complex<short>*)NULL,  num_to_read, meta);
-    //printf("ret = %d\n", ret);
+
     if (ret <= 0)
     {
         return ret;
@@ -109,6 +110,9 @@ int CaribouLiteRadio::ReadSamples(std::complex<short>* samples, size_t num_to_re
                                              _read_samples, 
                                              _read_metadata, 
                                              num_to_read);
+    // TODO: remove debug
+    ZF_LOGD("cariboulite_radio_read_samples ret =%d\n", ret);
+
     if (ret <= 0)
     {
         // printf("failed to read samples: ret = %d\n", ret);
@@ -179,7 +183,8 @@ CaribouLiteRadio::CaribouLiteRadio( const cariboulite_radio_state_st* radio,
 {
     size_t mtu_size = GetNativeMtuSample();
     // TODO: remove verbose logging once done debugging
-    // zf_log_set_output_level(ZF_LOG_VERBOSE);
+    zf_log_set_output_level(ZF_LOG_VERBOSE);
+
     if (_api_type == Async)
     {
         //printf("Creating Radio Type %d ASYNC\n", type);

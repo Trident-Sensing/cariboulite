@@ -1278,13 +1278,13 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
         if (radio->read_fail_count > 3) {
             ZF_LOGE("Read returned -1: Attempting to soft reset FPGA");
             caribou_fpga_soft_reset(&radio->sys->fpga);
+            usleep(1000);
 	    }
 	    break;
 	case -2:
 	    // -2 reserved for debug mode
-        ZF_LOGE("Read returned -2: Attempting to soft reset FPGA");
+        ZF_LOGE("Read returned -2: an error reserved for debug mode");
         radio->read_fail_count++;
-        caribou_fpga_soft_reset(&radio->sys->fpga);
 	    break;
 	case -3:
         // on smi data sync fail, try soft reseting the FPGA
@@ -1292,12 +1292,14 @@ int cariboulite_radio_read_samples(cariboulite_radio_state_st* radio,
 	    radio->read_fail_count++;
 	    ZF_LOGD("Read returned -3: Attempting to soft reset FPGA");
         caribou_fpga_soft_reset(&radio->sys->fpga);
+        usleep(1000);
 	    break;
 	case 0:
         ZF_LOGE("SMI reading operation returned timeout");
 	    radio->read_fail_count++;
 	    if (radio->read_fail_count > 15) {
             caribou_fpga_soft_reset(&radio->sys->fpga);
+            usleep(1000);
 	    }
 	    break;
 	default:
